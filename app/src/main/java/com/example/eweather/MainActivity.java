@@ -2,10 +2,13 @@ package com.example.eweather;
 
 import androidx.appcompat.app.AppCompatActivity;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 
 import com.example.util.HttpUtil;
+
+import org.litepal.LitePal;
 
 import java.io.IOException;
 
@@ -19,6 +22,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         url="http://www.baidu.com";
         HttpUtil.sendOkHttpRequest(url, new Callback() {
             @Override
