@@ -1,17 +1,25 @@
 package com.example.eweather;
 
+import androidx.annotation.NonNull;
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.view.GravityCompat;
+import androidx.drawerlayout.widget.DrawerLayout;
 
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
-import android.widget.Toast;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageView;
 
 import com.example.db.CityBean;
 import com.example.db.CountryBean;
 import com.example.db.ProvinceBean;
+import com.example.db.SearchBean;
 import com.example.util.HttpUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -29,21 +37,77 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+    /*侧滑布局*/
+    DrawerLayout drawerLayout;
+    EditText search_city_input;
+    ImageView search_city_btn;
+    SearchBean searchBean;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        search_city_input=(EditText)findViewById(R.id.search_city_input);
+        search_city_btn=(ImageView)findViewById(R.id.search_city_btn);
+        search_city_btn.setOnClickListener(this);
+        searchBean=new SearchBean();
+        /*设置toolBar*/
         setToolBar();
+        /*设置侧滑导航*/
+        setNavigationIcon();
+    }
+    /*监听点击事件*/
+    @Override
+    public void onClick(View view) {
+        switch (view.getId()){
+            case R.id.search_city_btn:
+                String text=search_city_input.getText().toString();
+                Log.d("MainActivity",text);
+                break;
+            default:
+                break;
+        }
     }
 
+    /*ToolBar中item点击事件*/
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        switch (item.getItemId()){
+            /*点击侧滑导航item*/
+            case android.R.id.home:
+                drawerLayout.openDrawer(GravityCompat.START);
+                break;
+            /*点击搜索城市item*/
+            case R.id.search_city:
+
+                break;
+            /*点击隐藏item*/
+            case R.id.manage_city:
+
+                break;
+            default:
+                break;
+        }
+        return true;
+    }
+    /*将toolbar.xml加载到Toolbar*/
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.toolbar,menu);
         return true;
     }
-
+    /*设置滑动导航图片*/
+    public void setNavigationIcon(){
+        drawerLayout=(DrawerLayout)findViewById(R.id.drawerLayout);
+        ActionBar actionBar=getSupportActionBar();
+        if(actionBar!=null){
+            /*显示侧滑导航*/
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            /*设置侧滑图片*/
+            actionBar.setHomeAsUpIndicator(R.drawable.user_navigation);
+        }
+    }
     /*设置toolBar*/
     public void setToolBar(){
         Toolbar toolbar=(Toolbar)findViewById(R.id.homeToolbar);
@@ -51,6 +115,30 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         /*隐藏supportActionBar*/
 //        getSupportActionBar().hide();
+        /*显示大标题*/
+        getSupportActionBar().setDisplayShowTitleEnabled(false);
+    }
+    /*根据省获取市列表*/
+    public void getCityList(String provinceName){
+        /*判断相匹配的省*/
+        for (ProvinceBean provinceBean:searchBean.getAllProvinceList()){
+            /*匹配省名字*/
+            if(provinceBean.name.equals(provinceName)){
+                /*获取城市array*/
+                searchBean.setCityArray(provinceBean.districts);
+
+                Gson gson=new Gson();
+                ArrayList<CityBean> CityList=new ArrayList<>();
+                /*城市JsonArray转城市list*/
+                for (JsonElement City:searchBean.getCityArray()){
+                    /*JsonElement转CityBean*/
+                    CityBean cityBean=gson.fromJson(City,new TypeToken<CityBean>(){}.getType());
+                    CityList.add(cityBean);
+                }
+                /*将局部list set到SearchBean中*/
+                searchBean.setCityList(CityList);
+            }
+        }
     }
     /*获取行政区*/
     public void getAllLocation(){
@@ -78,44 +166,36 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call call, Response response) {
                 try{
+                    /*json转String*/
                     String responseData=response.body().string();
                     /*获取json对象*/
                     JsonObject jsonObject=new JsonParser().parse(responseData).getAsJsonObject();
-
                     /*获取json最外级数组*/
-                    JsonArray CountryArray=jsonObject.getAsJsonArray("districts");
-
+                    JsonArray ALLCountryArray=jsonObject.getAsJsonArray("districts");
+                    /*gson用来解析*/
                     Gson gson=new Gson();
-
-                    /*定义国家,省，市级数组*/
-                    ArrayList<CountryBean> CountryList=new ArrayList<>();
-                    ArrayList<ProvinceBean> ProvinceList=new ArrayList<>();
-                    ArrayList<CityBean> CityList=new ArrayList<>();
+                    /*定义国家,省，市级数组
+                    * 用来存储最外级数组转换后的数据
+                    * 获取所有城市*/
+                    ArrayList<CountryBean> ALLCountryList=new ArrayList<>();
+                    ArrayList<ProvinceBean> ALLProvinceList=new ArrayList<>();
                     /*json数组载入到java数组*/
-                    for(JsonElement Country:CountryArray){
+                    for(JsonElement Country:ALLCountryArray){
                         /*反射得到CountryBean.class*/
                         CountryBean CountryBean=gson.fromJson(Country,new TypeToken<CountryBean>(){}.getType());
-                        CountryList.add(CountryBean);
+                        ALLCountryList.add(CountryBean);
                     }
                     /*将CountryList中json数组遍历出来*/
-                    for(CountryBean CountryBean:CountryList){
+                    for(CountryBean CountryBean:ALLCountryList){
                         JsonArray ProvinceArray=CountryBean.districts;
                         /*将遍历的json数组载入到java数组*/
                         for(JsonElement Province:ProvinceArray){
                             /*反射得到ProvinceBean.class.class*/
                             ProvinceBean ProvinceBean=gson.fromJson(Province,new TypeToken<ProvinceBean>(){}.getType());
-                            ProvinceList.add(ProvinceBean);
+                            ALLProvinceList.add(ProvinceBean);
                         }
                     }
-                    /*将ProvinceList中json数组遍历出来*/
-                    for(ProvinceBean ProvinceBean:ProvinceList){
-                        JsonArray CityArray=ProvinceBean.districts;
-                        /*将遍历的城市json数组载入到java城市数组*/
-                        for(JsonElement City:CityArray){
-                            CityBean CityBean=gson.fromJson(City,new TypeToken<CityBean>(){}.getType());
-                            CityList.add(CityBean);
-                        }
-                    }
+                    searchBean.setAllProvinceList(ALLProvinceList);
                 }catch (Exception e){
                     e.printStackTrace();
                 }

@@ -2,18 +2,15 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/item1"
+        android:id="@+id/search_city"
         app:showAsAction="always"
-        android:title="i1">
+        android:title=""
+        android:icon="@drawable/search_white">
     </item>
     <item
-        android:id="@+id/item2"
-        app:showAsAction="always"
-        android:title="i2">
-    </item>
-    <item
-        android:id="@+id/item3"
-        app:showAsAction="always"
-        android:title="i3">
+        android:id="@+id/manage_city"
+        app:showAsAction="never"
+        android:title="管理城市"
+        android:icon="@drawable/others">
     </item>
 </menu>

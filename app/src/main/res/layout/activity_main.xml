@@ -2,28 +2,56 @@
 <androidx.drawerlayout.widget.DrawerLayout android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    xmlns:android="http://schemas.android.com/apk/res/android">
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:background="#626567">
     <FrameLayout android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        xmlns:android="http://schemas.android.com/apk/res/android"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
+        android:layout_height="match_parent">
         <androidx.appcompat.widget.Toolbar
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:alpha="1"
             android:id="@+id/homeToolbar"
-            android:background="@color/colorPrimaryDark"
+            android:background="#00000000"
             android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
             app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
-            app:titleTextColor="#00000000"
-            app:contentInsetStartWithNavigation="0dp"
-            />
+            app:contentInsetStartWithNavigation="0dp"/>
+
+
+        <RelativeLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="100dp"
+            >
+            <EditText
+                android:id="@+id/search_city_input"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_gravity="center_horizontal"
+                android:background="@drawable/editer_borders"
+                android:hint="搜索城市"
+                android:padding="10dp"
+                android:layout_marginHorizontal="20dp"
+                android:singleLine="true"/>
+
+            <ImageView
+                android:layout_width="60dp"
+                android:layout_height="60dp"
+                android:layout_alignRight="@id/search_city_input"
+                android:layout_centerVertical="true"
+                android:gravity="center"
+                android:scaleType="center"
+                android:src="@drawable/search_black"
+                android:id="@+id/search_city_btn"
+                />
+        </RelativeLayout>
     </FrameLayout>
     <TextView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:text="This is menu"
-        android:background="#ffffffff"
-        android:textSize="30sp"/>
+        android:background="#FBFCFC "
+        android:textSize="30sp"
+        />
 </androidx.drawerlayout.widget.DrawerLayout>

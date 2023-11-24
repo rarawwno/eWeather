@@ -45,4 +45,6 @@ dependencies {
     /*操作数据库
     * 不会，不用了*/
 //    implementation 'org.litepal.guolindev:core:3.2.3'
+    /*图片形状控件*/
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 }
