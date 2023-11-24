@@ -1,9 +1,13 @@
 package com.example.eweather;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.View;
+import android.widget.Toast;
 
 import com.example.db.CityBean;
 import com.example.db.CountryBean;
@@ -31,10 +35,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        getAllLocation();
+        setToolBar();
     }
-    /*隐藏ActionBar*/
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        getMenuInflater().inflate(R.menu.toolbar,menu);
+        return true;
+    }
+
+    /*设置toolBar*/
+    public void setToolBar(){
+        Toolbar toolbar=(Toolbar)findViewById(R.id.homeToolbar);
+        /*设置toolBar作为ActionBar*/
+        setSupportActionBar(toolbar);
+        /*隐藏supportActionBar*/
+//        getSupportActionBar().hide();
+    }
     /*获取行政区*/
     public void getAllLocation(){
         /*请求地址*/
