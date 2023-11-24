@@ -37,17 +37,21 @@ public class MainActivity extends AppCompatActivity {
 
     /*获取行政区*/
     public void getAllLocation(){
+        /*请求地址*/
         String requestURL="https://restapi.amap.com/v3/config/district";
+        /*应用Key*/
         String key="3b6e57cd1ef26be44b4c77c1c23f39f2";
+        /*请求完整路径，带参数*/
         String address="";
         /*行政区返回范围*/
         String subdistrict="2";
-        /*装载请求参数*/
+        /*请求参数打包成map*/
         HashMap<String,String> params=new HashMap<>();
         params.put("key",key);
         params.put("subdistrict",subdistrict);
-
+        /*拼接地址和参数*/
         address=spliceAddress(requestURL,params);
+        /*get请求*/
         HttpUtil.sendOkHttpRequest(address, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
