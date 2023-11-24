@@ -1,0 +1,8 @@
+package com.example.db;
+
+import com.google.gson.JsonArray;
+
+public class CountryBean {
+    public String name;
+    public JsonArray districts;
+}

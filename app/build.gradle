@@ -1,6 +1,14 @@
 apply plugin: 'com.android.application'
 
 android {
+    signingConfigs {
+        release {
+            storeFile file('D:\\keystore\\eWeather\\eWeather.jks')
+            storePassword 'hzj-456258'
+            keyAlias = 'key0'
+            keyPassword 'hzj-456258'
+        }
+    }
     compileSdkVersion 29
     buildToolsVersion "34.0.0"
     defaultConfig {
@@ -15,6 +23,9 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            signingConfig signingConfigs.debug
         }
     }
     sourceSets { main { assets.srcDirs = ['src/main/assets', 'asset'] } }
