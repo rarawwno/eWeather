@@ -12,15 +12,21 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.Button;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.Spinner;
+import android.widget.TextView;
 
 import com.example.db.CityBean;
+import com.example.db.CityWeather;
 import com.example.db.CountryBean;
 import com.example.db.ProvinceBean;
 import com.example.db.SearchBean;
 import com.example.util.HttpUtil;
+import com.example.util.MyLocationUtil;
+import com.example.util.SignalUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -29,6 +35,7 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -43,6 +50,89 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     EditText search_city_input;
     ImageView search_city_btn;
     SearchBean searchBean;
+    SignalUtil signalUtil;
+    MyLocationUtil myLocationUtil;
+    CityWeather cityWeather;
+    /*初始化spinner*/
+    public void initSpinner(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                ArrayList<ProvinceBean> allProvinceList=searchBean.getAllProvinceList();
+                final ArrayList<String> nameList=new ArrayList<>();
+                final ArrayList<String> adcodeList=new ArrayList<>();
+                /*遍历出name*/
+                for(ProvinceBean provinceBean:allProvinceList){
+                    String provinceName=provinceBean.name;
+                    String provinceAdcode=provinceBean.name;
+                    nameList.add(provinceName);
+                    adcodeList.add(provinceAdcode);
+                }
+                Spinner ProvinceSpinner=(Spinner)findViewById(R.id.ProvinceSpinner);
+                ProvinceSpinner.setAdapter(new ArrayAdapter<String>(MainActivity.this,R.layout.spinner_item,nameList));
+                ProvinceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
+                        String provinceName= nameList.get(index);
+                        String provinceAdcode=adcodeList.get(index);
+                        myLocationUtil.setProvinceName(provinceName);
+                        Log.d("MainActivity","spinner省名是："+myLocationUtil.getProvinceName());
+                        /*根据省名获取市list*/
+                        getCityList(myLocationUtil.getProvinceName());
+                        signalUtil.setCitySignal(signalUtil.Exist);
+                        myLocationUtil.setAdcode(provinceAdcode);
+                        /*init城市spinner*/
+                        initCitySpinner();
+                    }
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
+            }
+        });
+
+    }
+    /*根据省初始化城市spinner*/
+    public void initCitySpinner(){
+        if(signalUtil.getCitySignal()==signalUtil.Exist){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    /*获取cityList*/
+                    ArrayList<CityBean> CityList=searchBean.getCityList();
+                    final ArrayList<String> nameList=new ArrayList<>();
+                    final ArrayList<String> adcodeList=new ArrayList<>();
+                    for(CityBean cityBean:CityList){
+                        String name=cityBean.name;
+                        String adcode=cityBean.adcode;
+                        nameList.add(name);
+                        adcodeList.add(adcode);
+                    }
+                    /*改变UI*/
+                    Spinner CitySpinner=(Spinner)findViewById(R.id.CitySpinner);
+                    /*将数据适配到spinner*/
+                    CitySpinner.setAdapter(new ArrayAdapter<String>(MainActivity.this,R.layout.spinner_item,nameList));
+                    /*选择监听事件*/
+                    CitySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
+                            String name=nameList.get(index);
+                            String adcode=adcodeList.get(index);
+
+                            myLocationUtil.setCityName(name);
+                            myLocationUtil.setAdcode(adcode);
+                            getWeather();
+                        }
+                        @Override
+                        public void onNothingSelected(AdapterView<?> adapterView) {
+
+                        }
+                    });
+                }
+            });
+        }
+    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -52,18 +142,23 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         search_city_btn=(ImageView)findViewById(R.id.search_city_btn);
         search_city_btn.setOnClickListener(this);
         searchBean=new SearchBean();
+        signalUtil=new SignalUtil();
+        myLocationUtil=new MyLocationUtil();
+        cityWeather=new CityWeather();
         /*设置toolBar*/
         setToolBar();
         /*设置侧滑导航*/
         setNavigationIcon();
+        /*获取所有location*/
+        getAllLocation();
     }
     /*监听点击事件*/
     @Override
     public void onClick(View view) {
         switch (view.getId()){
+            /*点击搜索城市输入框中搜索按钮事件*/
             case R.id.search_city_btn:
-                String text=search_city_input.getText().toString();
-                Log.d("MainActivity",text);
+
                 break;
             default:
                 break;
@@ -84,7 +179,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                 break;
             /*点击隐藏item*/
             case R.id.manage_city:
-
+                drawerLayout.openDrawer(GravityCompat.START);
                 break;
             default:
                 break;
@@ -140,14 +235,72 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             }
         }
     }
+    /*获取天气*/
+    public void getWeather(){
+        /*请求地址*/
+        String requestURL="https://restapi.amap.com/v3/weather/weatherInfo";
+        /*参数*/
+        String key="3b6e57cd1ef26be44b4c77c1c23f39f2";
+        String city=myLocationUtil.getAdcode();
+        String extensions="base";
+        String output="JSON";
+
+        /*请求参数打包成map*/
+        HashMap<String,String> params=new HashMap<>();
+        params.put("key",key);
+        params.put("city",city);
+        params.put("extensions",extensions);
+        params.put("output",output);
+        /*拼接地址和参数*/
+        requestURL=spliceAddress(requestURL,params);
+
+        HttpUtil.sendOkHttpRequest(requestURL, new Callback() {
+            @Override
+            public void onFailure(Call call, IOException e) {
+
+            }
+
+            @Override
+            public void onResponse(Call call, Response response) throws IOException {
+                try{
+                    String responseData=response.body().string();
+                    JsonObject jsonObject=new JsonParser().parse(responseData).getAsJsonObject();
+                    JsonArray jsonArray=jsonObject.getAsJsonArray("lives");
+                    ArrayList<CityWeather> weatherInformations=new ArrayList<>();
+                    Gson gson=new Gson();
+                    for (JsonElement jsonElement:jsonArray){
+                        CityWeather cityWeather=gson.fromJson(jsonElement,new TypeToken<CityWeather>(){}.getType());
+                        weatherInformations.add(cityWeather);
+                    }
+                    cityWeather.setWeather(weatherInformations.get(0).getWeather());
+                    cityWeather.setTemperature(weatherInformations.get(0).getTemperature());
+                    loadWeather();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+    }
+    /*改变天气UI*/
+    public void loadWeather(){
+        final String weather=cityWeather.getWeather();
+        final String temperature=cityWeather.getTemperature();
+        final TextView weatherContent=(TextView)findViewById(R.id.weatherContent);
+        final TextView temperatureContent=(TextView)findViewById(R.id.temperatureContent);
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                weatherContent.setText(weather);
+                temperatureContent.setText(temperature);
+            }
+        });
+    }
     /*获取行政区*/
     public void getAllLocation(){
         /*请求地址*/
         String requestURL="https://restapi.amap.com/v3/config/district";
         /*应用Key*/
         String key="3b6e57cd1ef26be44b4c77c1c23f39f2";
-        /*请求完整路径，带参数*/
-        String address="";
         /*行政区返回范围*/
         String subdistrict="2";
         /*请求参数打包成map*/
@@ -155,9 +308,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         params.put("key",key);
         params.put("subdistrict",subdistrict);
         /*拼接地址和参数*/
-        address=spliceAddress(requestURL,params);
+        requestURL=spliceAddress(requestURL,params);
         /*get请求*/
-        HttpUtil.sendOkHttpRequest(address, new Callback() {
+        HttpUtil.sendOkHttpRequest(requestURL, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.d("MainActivity","响应失败");
@@ -196,6 +349,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
                         }
                     }
                     searchBean.setAllProvinceList(ALLProvinceList);
+                    signalUtil.setProvinceSignal(signalUtil.Exist);
+                    /*初始化spinner*/
+                    initSpinner();
                 }catch (Exception e){
                     e.printStackTrace();
                 }

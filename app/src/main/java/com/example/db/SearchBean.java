@@ -5,9 +5,18 @@ import com.google.gson.JsonArray;
 import java.util.ArrayList;
 
 public class SearchBean {
+    JsonArray AllProvinceArray;
     ArrayList<ProvinceBean> AllProvinceList;
     JsonArray CityArray;
     ArrayList<CityBean> CityList;
+
+    public JsonArray getAllProvinceArray() {
+        return AllProvinceArray;
+    }
+
+    public void setAllProvinceArray(JsonArray allProvinceArray) {
+        AllProvinceArray = allProvinceArray;
+    }
 
     public ArrayList<ProvinceBean> getAllProvinceList() {
         return AllProvinceList;
