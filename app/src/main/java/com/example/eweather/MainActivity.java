@@ -26,7 +26,7 @@ import com.example.db.ProvinceBean;
 import com.example.db.SearchBean;
 import com.example.util.HttpUtil;
 import com.example.util.MyLocationUtil;
-import com.example.util.SignalUtil;
+import com.example.db.SignalBean;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -35,7 +35,6 @@ import com.google.gson.JsonParser;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.IOException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -50,89 +49,10 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     EditText search_city_input;
     ImageView search_city_btn;
     SearchBean searchBean;
-    SignalUtil signalUtil;
+    SignalBean signalBean;
     MyLocationUtil myLocationUtil;
     CityWeather cityWeather;
-    /*初始化spinner*/
-    public void initSpinner(){
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ArrayList<ProvinceBean> allProvinceList=searchBean.getAllProvinceList();
-                final ArrayList<String> nameList=new ArrayList<>();
-                final ArrayList<String> adcodeList=new ArrayList<>();
-                /*遍历出name*/
-                for(ProvinceBean provinceBean:allProvinceList){
-                    String provinceName=provinceBean.name;
-                    String provinceAdcode=provinceBean.name;
-                    nameList.add(provinceName);
-                    adcodeList.add(provinceAdcode);
-                }
-                Spinner ProvinceSpinner=(Spinner)findViewById(R.id.ProvinceSpinner);
-                ProvinceSpinner.setAdapter(new ArrayAdapter<String>(MainActivity.this,R.layout.spinner_item,nameList));
-                ProvinceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
-                    @Override
-                    public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
-                        String provinceName= nameList.get(index);
-                        String provinceAdcode=adcodeList.get(index);
-                        myLocationUtil.setProvinceName(provinceName);
-                        Log.d("MainActivity","spinner省名是："+myLocationUtil.getProvinceName());
-                        /*根据省名获取市list*/
-                        getCityList(myLocationUtil.getProvinceName());
-                        signalUtil.setCitySignal(signalUtil.Exist);
-                        myLocationUtil.setAdcode(provinceAdcode);
-                        /*init城市spinner*/
-                        initCitySpinner();
-                    }
-                    @Override
-                    public void onNothingSelected(AdapterView<?> adapterView) {
 
-                    }
-                });
-            }
-        });
-
-    }
-    /*根据省初始化城市spinner*/
-    public void initCitySpinner(){
-        if(signalUtil.getCitySignal()==signalUtil.Exist){
-            runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    /*获取cityList*/
-                    ArrayList<CityBean> CityList=searchBean.getCityList();
-                    final ArrayList<String> nameList=new ArrayList<>();
-                    final ArrayList<String> adcodeList=new ArrayList<>();
-                    for(CityBean cityBean:CityList){
-                        String name=cityBean.name;
-                        String adcode=cityBean.adcode;
-                        nameList.add(name);
-                        adcodeList.add(adcode);
-                    }
-                    /*改变UI*/
-                    Spinner CitySpinner=(Spinner)findViewById(R.id.CitySpinner);
-                    /*将数据适配到spinner*/
-                    CitySpinner.setAdapter(new ArrayAdapter<String>(MainActivity.this,R.layout.spinner_item,nameList));
-                    /*选择监听事件*/
-                    CitySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-                        @Override
-                        public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
-                            String name=nameList.get(index);
-                            String adcode=adcodeList.get(index);
-
-                            myLocationUtil.setCityName(name);
-                            myLocationUtil.setAdcode(adcode);
-                            getWeather();
-                        }
-                        @Override
-                        public void onNothingSelected(AdapterView<?> adapterView) {
-
-                        }
-                    });
-                }
-            });
-        }
-    }
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -142,7 +62,7 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         search_city_btn=(ImageView)findViewById(R.id.search_city_btn);
         search_city_btn.setOnClickListener(this);
         searchBean=new SearchBean();
-        signalUtil=new SignalUtil();
+        signalBean =new SignalBean();
         myLocationUtil=new MyLocationUtil();
         cityWeather=new CityWeather();
         /*设置toolBar*/
@@ -151,6 +71,19 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         setNavigationIcon();
         /*获取所有location*/
         getAllLocation();
+    }
+    /*拼接请求地址和参数*/
+    private String spliceAddress(String requestURL, HashMap<String,String> params){
+        StringBuilder url=new StringBuilder();
+        url.append(requestURL).append("?");
+        if(params!=null&&params.size()!=0){
+            for(Map.Entry<String,String> entry:params.entrySet()){
+                url.append(entry.getKey()).append("=").append(entry.getValue());
+                url.append("&");
+            }
+            url.deleteCharAt(url.length()-1);
+        }
+        return url.toString();
     }
     /*监听点击事件*/
     @Override
@@ -218,9 +151,9 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
         /*判断相匹配的省*/
         for (ProvinceBean provinceBean:searchBean.getAllProvinceList()){
             /*匹配省名字*/
-            if(provinceBean.name.equals(provinceName)){
+            if(provinceBean.getName().equals(provinceName)){
                 /*获取城市array*/
-                searchBean.setCityArray(provinceBean.districts);
+                searchBean.setCityArray(provinceBean.getDistricts());
 
                 Gson gson=new Gson();
                 ArrayList<CityBean> CityList=new ArrayList<>();
@@ -297,80 +230,134 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
     }
     /*获取行政区*/
     public void getAllLocation(){
-        /*请求地址*/
         String requestURL="https://restapi.amap.com/v3/config/district";
-        /*应用Key*/
+        /*请求参数*/
         String key="3b6e57cd1ef26be44b4c77c1c23f39f2";
-        /*行政区返回范围*/
         String subdistrict="2";
-        /*请求参数打包成map*/
+        /*参数打包*/
         HashMap<String,String> params=new HashMap<>();
         params.put("key",key);
         params.put("subdistrict",subdistrict);
-        /*拼接地址和参数*/
+        /*参数拼接*/
         requestURL=spliceAddress(requestURL,params);
-        /*get请求*/
+        /*请求*/
         HttpUtil.sendOkHttpRequest(requestURL, new Callback() {
             @Override
             public void onFailure(Call call, IOException e) {
                 Log.d("MainActivity","响应失败");
             }
-
             @Override
             public void onResponse(Call call, Response response) {
                 try{
-                    /*json转String*/
                     String responseData=response.body().string();
-                    /*获取json对象*/
                     JsonObject jsonObject=new JsonParser().parse(responseData).getAsJsonObject();
-                    /*获取json最外级数组*/
-                    JsonArray ALLCountryArray=jsonObject.getAsJsonArray("districts");
-                    /*gson用来解析*/
+
+                    /*获取所有国家*/
+                    eWeatherApplication.getSpinnerUtil().setCountryJsonArray(jsonObject.getAsJsonArray("districts"));
                     Gson gson=new Gson();
-                    /*定义国家,省，市级数组
-                    * 用来存储最外级数组转换后的数据
-                    * 获取所有城市*/
-                    ArrayList<CountryBean> ALLCountryList=new ArrayList<>();
-                    ArrayList<ProvinceBean> ALLProvinceList=new ArrayList<>();
-                    /*json数组载入到java数组*/
-                    for(JsonElement Country:ALLCountryArray){
-                        /*反射得到CountryBean.class*/
+                    for(JsonElement Country:eWeatherApplication.getSpinnerUtil().getCountryJsonArray()){
                         CountryBean CountryBean=gson.fromJson(Country,new TypeToken<CountryBean>(){}.getType());
-                        ALLCountryList.add(CountryBean);
+                        eWeatherApplication.getSpinnerUtil().getCountryArrayList().add(CountryBean);
                     }
-                    /*将CountryList中json数组遍历出来*/
-                    for(CountryBean CountryBean:ALLCountryList){
-                        JsonArray ProvinceArray=CountryBean.districts;
-                        /*将遍历的json数组载入到java数组*/
-                        for(JsonElement Province:ProvinceArray){
-                            /*反射得到ProvinceBean.class.class*/
-                            ProvinceBean ProvinceBean=gson.fromJson(Province,new TypeToken<ProvinceBean>(){}.getType());
-                            ALLProvinceList.add(ProvinceBean);
-                        }
+                    /*获取所有省*/
+                    eWeatherApplication.getSpinnerUtil().setProvinceJsonArray(eWeatherApplication.getSpinnerUtil().getCountryArrayList().get(0).getDistricts());
+                    for(JsonElement Province:eWeatherApplication.getSpinnerUtil().getProvinceJsonArray()){
+                        ProvinceBean ProvinceBean=gson.fromJson(Province,new TypeToken<ProvinceBean>(){}.getType());
+                        eWeatherApplication.getSpinnerUtil().getProvinceArrayList().add(ProvinceBean);
                     }
-                    searchBean.setAllProvinceList(ALLProvinceList);
-                    signalUtil.setProvinceSignal(signalUtil.Exist);
+                    /*将数据保存到全局类中*/
+                    searchBean.setAllProvinceList(eWeatherApplication.getSpinnerUtil().getProvinceArrayList());
+                    signalBean.setProvinceSignal(signalBean.Exist);
                     /*初始化spinner*/
                     initSpinner();
                 }catch (Exception e){
                     e.printStackTrace();
                 }
-                /*更新UI*/
             }
         });
     }
 
-    /*拼接请求地址和参数*/
-    private String spliceAddress(String requestURL, Map<String,String> params){
-        StringBuilder url=new StringBuilder();
-        url.append(requestURL).append("?");
-        if(params!=null&&params.size()!=0){
-            for(Map.Entry<String,String> entry:params.entrySet()){
-                url.append(entry.getKey()).append("=").append(entry.getValue());
-                url.append("&");
+    /*初始化spinner*/
+    public void initSpinner(){
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                /*获取下拉所有省级*/
+                final ArrayList<String> nameList=new ArrayList<>();
+                final ArrayList<String> adcodeList=new ArrayList<>();
+                /*遍历出name*/
+                for(ProvinceBean provinceBean:eWeatherApplication.getSpinnerUtil().getProvinceArrayList()){
+                    String provinceName=provinceBean.getName();
+                    String provinceAdcode=provinceBean.getAdcode();
+                    nameList.add(provinceName);
+                    adcodeList.add(provinceAdcode);
+                }
+                /*适配省级下拉*/
+                Spinner ProvinceSpinner=(Spinner)findViewById(R.id.ProvinceSpinner);
+                ProvinceSpinner.setAdapter(new ArrayAdapter<String>(eWeatherApplication.getContext(),R.layout.spinner_item,nameList));
+                ProvinceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
+                    @Override
+                    public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
+                        /*获取选中的name和adcode*/
+                        String provinceName= nameList.get(index);
+                        String provinceAdcode=adcodeList.get(index);
+
+                        myLocationUtil.setProvinceName(provinceName);
+                        Log.d("MainActivity","spinner省名是："+myLocationUtil.getProvinceName());
+                        /*根据省名获取市list*/
+                        getCityList(myLocationUtil.getProvinceName());
+                        signalBean.setCitySignal(signalBean.Exist);
+                        myLocationUtil.setAdcode(provinceAdcode);
+                        /*init城市spinner*/
+                        initCitySpinner();
+                    }
+                    @Override
+                    public void onNothingSelected(AdapterView<?> adapterView) {
+
+                    }
+                });
             }
-            url.deleteCharAt(url.length()-1);
+        });
+
+    }
+    /*根据省初始化城市spinner*/
+    public void initCitySpinner(){
+        if(signalBean.getCitySignal()== signalBean.Exist){
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    /*获取cityList*/
+                    ArrayList<CityBean> CityList=searchBean.getCityList();
+                    final ArrayList<String> nameList=new ArrayList<>();
+                    final ArrayList<String> adcodeList=new ArrayList<>();
+                    for(CityBean cityBean:CityList){
+                        String name=cityBean.name;
+                        String adcode=cityBean.adcode;
+                        nameList.add(name);
+                        adcodeList.add(adcode);
+                    }
+                    /*改变UI*/
+                    Spinner CitySpinner=(Spinner)findViewById(R.id.CitySpinner);
+                    /*将数据适配到spinner*/
+                    CitySpinner.setAdapter(new ArrayAdapter<String>(MainActivity.this,R.layout.spinner_item,nameList));
+                    /*选择监听事件*/
+                    CitySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                        @Override
+                        public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
+                            String name=nameList.get(index);
+                            String adcode=adcodeList.get(index);
+
+                            myLocationUtil.setCityName(name);
+                            myLocationUtil.setAdcode(adcode);
+                            getWeather();
+                        }
+                        @Override
+                        public void onNothingSelected(AdapterView<?> adapterView) {
+
+                        }
+                    });
+                }
+            });
         }
-        return url.toString();
     }
 }

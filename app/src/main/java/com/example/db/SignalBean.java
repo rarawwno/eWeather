@@ -1,9 +1,10 @@
-package com.example.util;
+package com.example.db;
 
-public class SignalUtil {
+public class SignalBean {
     public final int Exist=1;
     public final int notExist=0;
-    /*城市Spinner信号*/
+    /*Spinner信号*/
+    int CountrySignal=Exist;
     int ProvinceSignal=notExist;
     int CitySignal=notExist;
 
@@ -21,5 +22,13 @@ public class SignalUtil {
 
     public void setCitySignal(int citySignal) {
         CitySignal = citySignal;
+    }
+
+    public int getCountrySignal() {
+        return CountrySignal;
+    }
+
+    public void setCountrySignal(int countrySignal) {
+        CountrySignal = countrySignal;
     }
 }

@@ -1,8 +1,8 @@
 package com.example.db;
 
 public class CityWeather {
-    String weather;
-    String temperature;
+    private String weather;
+    private String temperature;
 
     public String getWeather() {
         return weather;
