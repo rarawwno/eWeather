@@ -1,4 +1,4 @@
-package com.example.db;
+package com.example.bean;
 
 import com.google.gson.JsonArray;
 

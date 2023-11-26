@@ -1,6 +1,6 @@
 package com.example.util;
 
-import com.example.db.MyCityBean;
+import com.example.bean.MyCityBean;
 
 public class MyCityManager {
     private MyCityBean defaultCity=new MyCityBean();

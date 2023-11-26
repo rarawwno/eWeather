@@ -1,4 +1,4 @@
-package com.example.db;
+package com.example.bean;
 
 public class MyCityBean {
     String provinceName;

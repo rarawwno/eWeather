@@ -1,11 +1,11 @@
-package com.example.db;
+package com.example.bean;
 
 import com.google.gson.JsonArray;
 
-public class ProvinceBean {
-    private String name;
-    private JsonArray districts;
-    private String adcode;
+public class CityBean {
+    public String name;
+    public JsonArray districts;
+    public String adcode;
 
     public String getName() {
         return name;

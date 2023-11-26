@@ -7,6 +7,7 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -19,12 +20,12 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.example.db.CityBean;
-import com.example.db.CityWeatherBean;
-import com.example.db.CountryBean;
-import com.example.db.ProvinceBean;
-import com.example.db.SignalBean;
-import com.example.db.WeatherResponse;
+import com.example.bean.CityBean;
+import com.example.bean.CityWeatherBean;
+import com.example.bean.CountryBean;
+import com.example.bean.ProvinceBean;
+import com.example.bean.SignalBean;
+import com.example.bean.WeatherResponse;
 import com.example.util.HttpUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -42,7 +43,7 @@ import okhttp3.Call;
 import okhttp3.Callback;
 import okhttp3.Response;
 
-public class MainActivity extends AppCompatActivity implements View.OnClickListener {
+public class MainActivity extends AppCompatActivity{
     /*侧滑布局*/
     DrawerLayout drawerLayout;
     EditText search_city_input;
@@ -55,7 +56,8 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
 
         search_city_input=(EditText)findViewById(R.id.search_city_input);
         search_city_btn=(ImageView)findViewById(R.id.search_city_btn);
-        search_city_btn.setOnClickListener(this);
+
+        search_city_btn.setOnClickListener(eWeatherApplication.getControlManager().getClickListener());
         /*设置toolBar*/
         setToolBar();
         /*设置侧滑导航*/
@@ -75,18 +77,6 @@ public class MainActivity extends AppCompatActivity implements View.OnClickListe
             url.deleteCharAt(url.length()-1);
         }
         return url.toString();
-    }
-    /*监听点击事件*/
-    @Override
-    public void onClick(View view) {
-        switch (view.getId()){
-            /*点击搜索城市输入框中搜索按钮事件*/
-            case R.id.search_city_btn:
-
-                break;
-            default:
-                break;
-        }
     }
 
     /*ToolBar中item点击事件*/

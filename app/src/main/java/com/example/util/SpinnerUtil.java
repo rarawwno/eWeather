@@ -1,8 +1,8 @@
 package com.example.util;
 
-import com.example.db.CityBean;
-import com.example.db.CountryBean;
-import com.example.db.ProvinceBean;
+import com.example.bean.CityBean;
+import com.example.bean.CountryBean;
+import com.example.bean.ProvinceBean;
 import com.google.gson.JsonArray;
 
 import java.util.ArrayList;

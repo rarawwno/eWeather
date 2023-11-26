@@ -1,6 +1,6 @@
 package com.example.util;
 
-import com.example.db.SignalBean;
+import com.example.bean.SignalBean;
 
 public class SignalManagerUtil {
     SignalBean signalBean=new SignalBean();
