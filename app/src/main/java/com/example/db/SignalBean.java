@@ -1,12 +1,20 @@
 package com.example.db;
 
 public class SignalBean {
-    public final int Exist=1;
-    public final int notExist=0;
+    public static final int Exist=1;
+    public static final int notExist=0;
     /*Spinner信号*/
     int CountrySignal=Exist;
     int ProvinceSignal=notExist;
     int CitySignal=notExist;
+
+    public int getCountrySignal() {
+        return CountrySignal;
+    }
+
+    public void setCountrySignal(int countrySignal) {
+        CountrySignal = countrySignal;
+    }
 
     public int getProvinceSignal() {
         return ProvinceSignal;
@@ -24,11 +32,4 @@ public class SignalBean {
         CitySignal = citySignal;
     }
 
-    public int getCountrySignal() {
-        return CountrySignal;
-    }
-
-    public void setCountrySignal(int countrySignal) {
-        CountrySignal = countrySignal;
-    }
 }

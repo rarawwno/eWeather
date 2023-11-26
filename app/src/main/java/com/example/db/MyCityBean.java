@@ -4,6 +4,16 @@ public class MyCityBean {
     String provinceName;
     String cityName;
     String adcode;
+    CityWeatherBean cityWeatherBean=new CityWeatherBean();
+    WeatherResponse weatherResponse=new WeatherResponse();
+
+    public WeatherResponse getWeatherResponse() {
+        return weatherResponse;
+    }
+
+    public void setWeatherResponse(WeatherResponse weatherResponse) {
+        this.weatherResponse = weatherResponse;
+    }
 
     public String getProvinceName() {
         return provinceName;
@@ -27,5 +37,13 @@ public class MyCityBean {
 
     public void setAdcode(String adcode) {
         this.adcode = adcode;
+    }
+
+    public CityWeatherBean getCityWeatherBean() {
+        return cityWeatherBean;
+    }
+
+    public void setCityWeatherBean(CityWeatherBean cityWeatherBean) {
+        this.cityWeatherBean = cityWeatherBean;
     }
 }

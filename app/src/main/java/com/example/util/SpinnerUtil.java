@@ -9,11 +9,11 @@ import java.util.ArrayList;
 
 public class SpinnerUtil {
     private JsonArray CountryJsonArray;
-    private ArrayList<CountryBean> CountryArrayList;
+    private ArrayList<CountryBean> CountryArrayList=new ArrayList<>();
     private JsonArray provinceJsonArray;
-    private ArrayList<ProvinceBean> provinceArrayList;
+    private ArrayList<ProvinceBean> provinceArrayList=new ArrayList<>();
     private JsonArray CityJsonArray;
-    private ArrayList<CityBean> CityArrayList;
+    private ArrayList<CityBean> CityArrayList=new ArrayList<>();
 
     public JsonArray getCountryJsonArray() {
         return CountryJsonArray;
