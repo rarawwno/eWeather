@@ -78,7 +78,6 @@ public class MainActivity extends AppCompatActivity{
         }
         return url.toString();
     }
-
     /*ToolBar中item点击事件*/
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
@@ -168,7 +167,6 @@ public class MainActivity extends AppCompatActivity{
             public void onFailure(Call call, IOException e) {
 
             }
-
             @Override
             public void onResponse(Call call, Response response) throws IOException {
                 try{
@@ -292,7 +290,6 @@ public class MainActivity extends AppCompatActivity{
                 });
             }
         });
-
     }
     /*根据省初始化城市spinner*/
     public void initCitySpinner(){
