@@ -42,9 +42,6 @@ dependencies {
     implementation 'com.squareup.okhttp3:okhttp:3.4.1'
     /*解析JSON*/
     implementation 'com.google.code.gson:gson:2.7'
-    /*操作数据库
-    * 不会，不用了*/
-//    implementation 'org.litepal.guolindev:core:3.2.3'
-    /*图片形状控件*/
-    implementation 'de.hdodenhof:circleimageview:3.1.0'
+    /*操作数据库*/
+    implementation 'org.litepal.android:core:1.4.1'
 }

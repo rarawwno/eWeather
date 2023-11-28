@@ -7,7 +7,6 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.core.view.GravityCompat;
 import androidx.drawerlayout.widget.DrawerLayout;
 
-import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -20,12 +19,12 @@ import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.example.bean.CityBean;
-import com.example.bean.CityWeatherBean;
-import com.example.bean.CountryBean;
-import com.example.bean.ProvinceBean;
-import com.example.bean.SignalBean;
-import com.example.bean.WeatherResponse;
+import com.example.element.CityEle;
+import com.example.element.CityWeatherEle;
+import com.example.element.CountryEle;
+import com.example.element.DistrictResponse;
+import com.example.element.ProvinceEle;
+import com.example.element.WeatherResponse;
 import com.example.util.HttpUtil;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
@@ -113,7 +112,7 @@ public class MainActivity extends AppCompatActivity{
             /*显示侧滑导航*/
             actionBar.setDisplayHomeAsUpEnabled(true);
             /*设置侧滑图片*/
-            actionBar.setHomeAsUpIndicator(R.drawable.user_navigation);
+            actionBar.setHomeAsUpIndicator(R.drawable.menu);
         }
     }
     /*设置toolBar*/
@@ -126,25 +125,7 @@ public class MainActivity extends AppCompatActivity{
         /*显示大标题*/
         getSupportActionBar().setDisplayShowTitleEnabled(false);
     }
-    /*根据省获取市列表*/
-    public void getCityList(String provinceName){
-        /*判断相匹配的省*/
-        for (ProvinceBean provinceBean:eWeatherApplication.getSpinnerUtil().getProvinceArrayList()){
-            /*匹配省名字*/
-            if(provinceBean.getName().equals(provinceName)){
-                /*跟新市列表*/
-                eWeatherApplication.getSpinnerUtil().setCityJsonArray(provinceBean.getDistricts());
-                Gson gson=new Gson();
-                ArrayList<CityBean> arrayList=new ArrayList<>();
-                for (JsonElement City:eWeatherApplication.getSpinnerUtil().getCityJsonArray()){
-                    /*JsonElement转CityBean*/
-                    CityBean cityBean=gson.fromJson(City,new TypeToken<CityBean>(){}.getType());
-                    arrayList.add(cityBean);
-                }
-                eWeatherApplication.getSpinnerUtil().setCityArrayList(arrayList);
-            }
-        }
-    }
+
     /*获取天气*/
     public void getWeather(){
         /*请求地址*/
@@ -180,11 +161,11 @@ public class MainActivity extends AppCompatActivity{
                     JsonArray lives=weatherResponse.getLives();
                     JsonElement livesBody=lives.get(0);
                     JsonObject livesBodyObject=gson.fromJson(livesBody,new TypeToken<JsonObject>(){}.getType());
-                    CityWeatherBean cityWeatherBean=gson.fromJson(livesBodyObject,new TypeToken<CityWeatherBean>(){}.getType());
-                    String weather=cityWeatherBean.getWeather();
-                    String temperature=cityWeatherBean.getTemperature();
-                    eWeatherApplication.getMyCityManager().getDefaultCity().getCityWeatherBean().setWeather(weather);
-                    eWeatherApplication.getMyCityManager().getDefaultCity().getCityWeatherBean().setTemperature(temperature);
+                    CityWeatherEle cityWeatherEle =gson.fromJson(livesBodyObject,new TypeToken<CityWeatherEle>(){}.getType());
+                    String weather= cityWeatherEle.getWeather();
+                    String temperature= cityWeatherEle.getTemperature();
+                    eWeatherApplication.getMyCityManager().getDefaultCity().getCityWeatherEle().setWeather(weather);
+                    eWeatherApplication.getMyCityManager().getDefaultCity().getCityWeatherEle().setTemperature(temperature);
                     loadWeather();
                 }catch (Exception e){
                     e.printStackTrace();
@@ -194,8 +175,8 @@ public class MainActivity extends AppCompatActivity{
     }
     /*改变天气UI*/
     public void loadWeather(){
-        final String weather=eWeatherApplication.getMyCityManager().getDefaultCity().getCityWeatherBean().getWeather();
-        final String temperature=eWeatherApplication.getMyCityManager().getDefaultCity().getCityWeatherBean().getTemperature();
+        final String weather=eWeatherApplication.getMyCityManager().getDefaultCity().getCityWeatherEle().getWeather();
+        final String temperature=eWeatherApplication.getMyCityManager().getDefaultCity().getCityWeatherEle().getTemperature();
         final TextView weatherContent=(TextView)findViewById(R.id.weatherContent);
         final TextView temperatureContent=(TextView)findViewById(R.id.temperatureContent);
         runOnUiThread(new Runnable() {
@@ -228,21 +209,38 @@ public class MainActivity extends AppCompatActivity{
             public void onResponse(Call call, Response response) {
                 try{
                     String responseData=response.body().string();
-                    JsonObject jsonObject=new JsonParser().parse(responseData).getAsJsonObject();
-
-                    /*获取所有国家*/
-                    eWeatherApplication.getSpinnerUtil().setCountryJsonArray(jsonObject.getAsJsonArray("districts"));
                     Gson gson=new Gson();
-                    for(JsonElement Country:eWeatherApplication.getSpinnerUtil().getCountryJsonArray()){
-                        CountryBean CountryBean=gson.fromJson(Country,new TypeToken<CountryBean>(){}.getType());
-                        eWeatherApplication.getSpinnerUtil().getCountryArrayList().add(CountryBean);
+                    JsonObject jsonObject=new JsonParser().parse(responseData).getAsJsonObject();
+                    /*取出国家列表*/
+                    JsonArray countryArray=jsonObject.getAsJsonArray("districts");
+                    /*转换国家列表*/
+                    ArrayList<CountryEle> countryList=new ArrayList<>();
+                    for(JsonElement Country:countryArray){
+                        CountryEle CountryEle =gson.fromJson(Country,new TypeToken<CountryEle>(){}.getType());
+                        countryList.add(CountryEle);
                     }
-                    /*获取所有省*/
-                    eWeatherApplication.getSpinnerUtil().setProvinceJsonArray(eWeatherApplication.getSpinnerUtil().getCountryArrayList().get(0).getDistricts());
-                    for(JsonElement Province:eWeatherApplication.getSpinnerUtil().getProvinceJsonArray()){
-                        ProvinceBean ProvinceBean=gson.fromJson(Province,new TypeToken<ProvinceBean>(){}.getType());
-                        eWeatherApplication.getSpinnerUtil().getProvinceArrayList().add(ProvinceBean);
+                    eWeatherApplication.getResponseManager().getAreaResponse().setCountryList(countryList);
+
+                    /*取出省列表*/
+                    CountryEle countryEle =countryList.get(0);
+                    JsonArray provinceArray= countryEle.getDistricts();
+                    /*转换省列表*/
+                    ArrayList<ProvinceEle> provinceList=new ArrayList<>();
+                    for(JsonElement province:provinceArray){
+                        ProvinceEle provinceEle =gson.fromJson(province,new TypeToken<ProvinceEle>(){}.getType());
+                        provinceList.add(provinceEle);
                     }
+                    eWeatherApplication.getResponseManager().getAreaResponse().setProvinceList(provinceList);
+                    /*取出所有市列表*/
+                    ArrayList<CityEle> cityList=new ArrayList<>();
+                    for(ProvinceEle provinceEle :provinceList){
+                        JsonArray cityArray= provinceEle.getDistricts();
+                        for(JsonElement city:cityArray){
+                            CityEle cityEle =gson.fromJson(city,new TypeToken<CityEle>(){}.getType());
+                            cityList.add(cityEle);
+                        }
+                    }
+                    eWeatherApplication.getResponseManager().getAreaResponse().setCityList(cityList);
                     /*初始化spinner*/
                     initSpinner();
                 }catch (Exception e){
@@ -251,21 +249,20 @@ public class MainActivity extends AppCompatActivity{
             }
         });
     }
-
-    /*初始化spinner*/
+    /*省下拉显示所有省
+    * 保存选择的省*/
     public void initSpinner(){
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
                 /*获取下拉所有省级*/
                 final ArrayList<String> nameList=new ArrayList<>();
-                final ArrayList<String> adcodeList=new ArrayList<>();
-                /*遍历出name和adcode*/
-                for(ProvinceBean provinceBean:eWeatherApplication.getSpinnerUtil().getProvinceArrayList()){
-                    String provinceName=provinceBean.getName();
-                    String provinceAdcode=provinceBean.getAdcode();
+                ArrayList<ProvinceEle> provinceList=eWeatherApplication.getResponseManager().getAreaResponse().getProvinceList();
+                eWeatherApplication.getSpinnerUtil().setProvinceList(provinceList);
+                /*遍历出name*/
+                for(ProvinceEle provinceEle :provinceList){
+                    String provinceName= provinceEle.getName();
                     nameList.add(provinceName);
-                    adcodeList.add(provinceAdcode);
                 }
                 /*适配省级下拉*/
                 Spinner ProvinceSpinner=(Spinner)findViewById(R.id.ProvinceSpinner);
@@ -273,13 +270,11 @@ public class MainActivity extends AppCompatActivity{
                 ProvinceSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener(){
                     @Override
                     public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
-                        /*获取选中的name和adcode*/
-                        eWeatherApplication.getMyCityManager().getDefaultCity().setProvinceName(nameList.get(index));
-                        eWeatherApplication.getMyCityManager().getDefaultCity().setAdcode(adcodeList.get(index));
+                        /*获取name*/
+                        String provinceName=nameList.get(index);
+                        eWeatherApplication.getMyCityManager().getDefaultCity().setProvinceName(provinceName);
                         /*根据省名获取市list*/
-                        getCityList(eWeatherApplication.getMyCityManager().getDefaultCity().getProvinceName());
-                        /*我的省已经选好*/
-                        eWeatherApplication.getSignalManagerUtil().getSignalBean().setProvinceSignal(eWeatherApplication.getSignalManagerUtil().getSignalBean().Exist);
+                        getCityList(provinceName);
                         /*init城市spinner*/
                         initCitySpinner();
                     }
@@ -291,18 +286,35 @@ public class MainActivity extends AppCompatActivity{
             }
         });
     }
+    /*根据省获取市列表*/
+    public void getCityList(String provinceName){
+        ArrayList<ProvinceEle> provinceList=eWeatherApplication.getResponseManager().getAreaResponse().getProvinceList();
+        ArrayList<CityEle> cityList=new ArrayList<>();
+        for (ProvinceEle provinceEle :provinceList){
+            /*匹配省名字*/
+            if(provinceEle.getName().equals(provinceName)){
+                JsonArray cityArray= provinceEle.getDistricts();
+                Gson gson=new Gson();
+                for (JsonElement City:cityArray){
+                    CityEle cityEle =gson.fromJson(City,new TypeToken<CityEle>(){}.getType());
+                    cityList.add(cityEle);
+                }
+                eWeatherApplication.getSpinnerUtil().setCityList(cityList);
+            }
+        }
+    }
     /*根据省初始化城市spinner*/
     public void initCitySpinner(){
-        if(eWeatherApplication.getSignalManagerUtil().getSignalBean().getProvinceSignal()== SignalBean.Exist){
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
                     try{
                         final ArrayList<String> nameList=new ArrayList<>();
                         final ArrayList<String> adcodeList=new ArrayList<>();
-                        for(CityBean cityBean:eWeatherApplication.getSpinnerUtil().getCityArrayList()){
-                            String name=cityBean.getName();
-                            String adcode=cityBean.getAdcode();
+                        ArrayList<CityEle> cityList=eWeatherApplication.getSpinnerUtil().getCityList();
+                        for(CityEle cityEle :cityList){
+                            String name= cityEle.getName();
+                            String adcode= cityEle.getAdcode();
                             nameList.add(name);
                             adcodeList.add(adcode);
                         }
@@ -311,8 +323,10 @@ public class MainActivity extends AppCompatActivity{
                         CitySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
                             @Override
                             public void onItemSelected(AdapterView<?> adapterView, View view, int index, long l) {
-                                eWeatherApplication.getMyCityManager().getDefaultCity().setCityName(nameList.get(index));
-                                eWeatherApplication.getMyCityManager().getDefaultCity().setAdcode(adcodeList.get(index));
+                                String name=nameList.get(index);
+                                String adcode=adcodeList.get(index);
+                                eWeatherApplication.getMyCityManager().getDefaultCity().setCityName(name);
+                                eWeatherApplication.getMyCityManager().getDefaultCity().setAdcode(adcode);
                                 getWeather();
                             }
                             @Override
@@ -325,6 +339,7 @@ public class MainActivity extends AppCompatActivity{
                     }
                 }
             });
-        }
+
     }
+
 }

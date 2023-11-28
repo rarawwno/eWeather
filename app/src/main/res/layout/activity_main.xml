@@ -4,7 +4,7 @@
     android:layout_height="match_parent"
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:background="#626567">
+    android:background="@color/white">
     <FrameLayout android:layout_width="match_parent"
         android:layout_height="match_parent">
         <androidx.appcompat.widget.Toolbar
@@ -45,7 +45,7 @@
         </RelativeLayout>
         <LinearLayout
             android:layout_width="200dp"
-            android:layout_height="100dp"
+            android:layout_height="wrap_content"
             android:gravity="center_horizontal"
             android:orientation="vertical"
             android:layout_marginTop="200dp"
@@ -57,23 +57,22 @@
                 android:gravity="center_vertical"
                 android:text="天气状况："
                 android:singleLine="true"
-                android:textColor="#FDFEFE"
+                android:textColor="@color/black"
                 android:id="@+id/weatherHint"
                 />
             <TextView
+                android:id="@+id/weatherContent"
                 android:layout_width="100dp"
                 android:layout_height="25dp"
-                android:id="@+id/weatherContent"
                 android:gravity="center"
-                android:textColor="#FDFEFE"
-                />
+                android:textColor="@color/black" />
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="25dp"
                 android:gravity="center_vertical"
                 android:text="实时温度："
                 android:singleLine="true"
-                android:textColor="#FDFEFE"
+                android:textColor="@color/black"
                 android:id="@+id/temperatureHint"
                 />
             <TextView
@@ -81,7 +80,7 @@
                 android:layout_height="25dp"
                 android:id="@+id/temperatureContent"
                 android:gravity="center"
-                android:textColor="#FDFEFE"
+                android:textColor="@color/black"
                 />
         </LinearLayout>
     </FrameLayout>
@@ -98,6 +97,7 @@
             android:text="省："
             android:gravity="center_vertical"
             android:paddingVertical="10dp"
+            android:textColor="@color/black"
             />
         <Spinner
             android:layout_width="250dp"
@@ -111,6 +111,7 @@
             android:text="市："
             android:gravity="center_vertical"
             android:paddingVertical="10dp"
+            android:textColor="@color/black"
             />
         <Spinner
             android:layout_width="250dp"

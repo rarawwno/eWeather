@@ -1,15 +1,15 @@
 package com.example.util;
 
-import com.example.bean.MyCityBean;
+import com.example.element.MyCityEle;
 
 public class MyCityManager {
-    private MyCityBean defaultCity=new MyCityBean();
+    private MyCityEle defaultCity=new MyCityEle();
 
-    public MyCityBean getDefaultCity() {
+    public MyCityEle getDefaultCity() {
         return defaultCity;
     }
 
-    public void setDefaultCity(MyCityBean defaultCity) {
+    public void setDefaultCity(MyCityEle defaultCity) {
         this.defaultCity = defaultCity;
     }
 }

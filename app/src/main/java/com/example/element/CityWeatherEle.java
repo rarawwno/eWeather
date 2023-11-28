@@ -1,6 +1,6 @@
-package com.example.bean;
+package com.example.element;
 
-public class CityWeatherBean {
+public class CityWeatherEle {
     private String weather="";
     private String temperature="";
 

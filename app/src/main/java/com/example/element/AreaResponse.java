@@ -1,13 +1,19 @@
-package com.example.util;
-
-import com.example.element.CityEle;
-import com.example.element.ProvinceEle;
+package com.example.element;
 
 import java.util.ArrayList;
 
-public class SpinnerUtil {
+public class AreaResponse {
+    ArrayList<CountryEle> countryList;
     ArrayList<ProvinceEle> provinceList;
     ArrayList<CityEle> cityList;
+
+    public ArrayList<CountryEle> getCountryList() {
+        return countryList;
+    }
+
+    public void setCountryList(ArrayList<CountryEle> countryList) {
+        this.countryList = countryList;
+    }
 
     public ArrayList<ProvinceEle> getProvinceList() {
         return provinceList;

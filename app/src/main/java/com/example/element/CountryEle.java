@@ -1,11 +1,10 @@
-package com.example.bean;
+package com.example.element;
 
 import com.google.gson.JsonArray;
 
-public class CityBean {
-    public String name;
-    public JsonArray districts;
-    public String adcode;
+public class CountryEle {
+    private String name;
+    private JsonArray districts;
 
     public String getName() {
         return name;
@@ -21,13 +20,5 @@ public class CityBean {
 
     public void setDistricts(JsonArray districts) {
         this.districts = districts;
-    }
-
-    public String getAdcode() {
-        return adcode;
-    }
-
-    public void setAdcode(String adcode) {
-        this.adcode = adcode;
     }
 }

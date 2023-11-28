@@ -1,10 +1,10 @@
-package com.example.bean;
+package com.example.element;
 
-public class MyCityBean {
+public class MyCityEle {
     String provinceName;
     String cityName;
     String adcode;
-    CityWeatherBean cityWeatherBean=new CityWeatherBean();
+    CityWeatherEle cityWeatherEle =new CityWeatherEle();
     WeatherResponse weatherResponse=new WeatherResponse();
 
     public WeatherResponse getWeatherResponse() {
@@ -39,11 +39,11 @@ public class MyCityBean {
         this.adcode = adcode;
     }
 
-    public CityWeatherBean getCityWeatherBean() {
-        return cityWeatherBean;
+    public CityWeatherEle getCityWeatherEle() {
+        return cityWeatherEle;
     }
 
-    public void setCityWeatherBean(CityWeatherBean cityWeatherBean) {
-        this.cityWeatherBean = cityWeatherBean;
+    public void setCityWeatherEle(CityWeatherEle cityWeatherEle) {
+        this.cityWeatherEle = cityWeatherEle;
     }
 }

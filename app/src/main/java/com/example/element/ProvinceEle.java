@@ -1,8 +1,8 @@
-package com.example.bean;
+package com.example.element;
 
 import com.google.gson.JsonArray;
 
-public class ProvinceBean {
+public class ProvinceEle {
     private String name;
     private JsonArray districts;
     private String adcode;
